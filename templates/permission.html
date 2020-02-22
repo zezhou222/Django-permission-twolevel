@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <style>
+
+        .level_two{
+            padding-left: 7%;
+        }
+
+        .level_three{
+            padding-left: 14%;
+        }
+
+        tbody tr:hover{
+            background: #dbdbdb;
+            cursor: pointer;
+        }
+
+        tbody tr:active{
+            background: #a8a8a8;
+        }
+
+        .tr_visited{
+            background: #acdbdb;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+
+    <div class="row">
+
+        <!-- 用户面板 -->
+        <div class="col-md-4">
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <p>
+                    用户
+                    <button class="btn btn-success btn-sm pull-right" id="add_user">添加</button>
+                    </p>
+                </div>
+                <div class="panel-body">
+
+                    <table class="table" id="user_table">
+
+                        <thead>
+                            <tr>
+                                <td>id</td>
+                                <td>username</td>
+                                <td>option</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 角色面板 -->
+        <div class="col-md-4">
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <p>
+                    角色
+                    <button class="btn btn-success btn-sm pull-right" id="add_role">添加</button>
+                    </p>
+                </div>
+                <div class="panel-body">
+
+                    <table class="table" id="role_table">
+
+                        <thead>
+                            <tr>
+                                <td>
+                                    <input type="checkbox" id="select_all_role">
+                                </td>
+                                <td>id</td>
+                                <td>role_name</td>
+                                <td>option</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="panel-footer" style="height: 50px;">
+                    <button class="btn btn-success btn-sm pull-right" id="save_role">保存</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 权限面板 -->
+        <div class="col-md-4">
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    权限
+                </div>
+                <div class="panel-body">
+                    <ul type="none" id="permission_ul">
+
+                    </ul>
+                </div>
+                <div class="panel-footer" style="height: 50px;">
+                    <button class="btn btn-success btn-sm pull-right" id="save_permission">保存</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/jquery-3.4.1.js"></script>
+<script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script>
+
+    function start() {
+        get_user();  // 获取一波用户
+        get_role();  // 获取全部角色
+        get_permission_menu();  // 获取权限菜单
+        select_all_role();  // 监测角色全选复选框
+        select_part_permission();  // 监测权限复选框得选中
+        user_click();  // 用户行点击事件
+        role_click();  // 角色行点击事件
+        click_save_role();  // 保存用户选择得角色
+        click_save_permission();  // 保存角色选择得权限
+    }
+
+    function select_all(selector='#select_all_role') {
+        var obj = $(selector).parentsUntil('table').parent().first().find('tbody input[type=checkbox]');
+        var value = $(selector).prop('checked');
+        obj.prop('checked', value);
+    }
+
+    function get_put_user_data(id) {
+        $.ajax({
+            url: '/rbac/user/',
+            method: 'get',
+            data: {'id': id},
+            success: function (res) {
+                $('#role_table tbody input[type=checkbox]').val(res['role_id']);
+                $('#permission_ul .level_three input[type=checkbox]').val(res['path_id']);
+            }
+        });
+    }
+
+    function get_put_role_data(id) {
+        $.ajax({
+            url: '/rbac/role/',
+            method: 'get',
+            data: {'id': id},
+            success: function (res) {
+                $('#permission_ul .level_three input[type=checkbox]').val(res['path_id']);
+            }
+        });
+    }
+
+    function get_user(page=1) {
+        $.ajax({
+            url: '/rbac/user/',
+            method: 'get',
+            data: {
+                'page': page,
+                'limit': 10,
+            },
+            success: function (res) {
+                for(var i=0;i<res.length;i++){
+                    $('#user_table tbody').append(`
+                    <tr idv="${res[i]['id']}">
+                        <td>${res[i]['id']}</td>
+                        <td>${res[i]['username']}</td>
+                        <td>
+                            <button class="btn btn-primary btn-xs edit_user" idv="${res[i]['id']}">编辑</button>
+                            <button class="btn btn-danger btn-xs delete_user" idv="${res[i]['id']}">删除</button>
+                         </td>
+                    </tr>
+                    `);
+                }
+
+            }
+        });
+    }
+
+    function get_role(){
+        $.ajax({
+            url: '/rbac/role/',
+            method: 'get',
+            success: function (res) {
+                for(var i=0;i<res.length;i++){
+                    $('#role_table tbody').append(`
+                    <tr idv='${res[i]['id']}'>
+                        <td><input type="checkbox" class="select_role" value="${res[i]['id']}"></td>
+                        <td>${res[i]['id']}</td>
+                        <td>${res[i]['role_name']}</td>
+                        <td>
+                            <button class="btn btn-primary btn-xs edit_role" idv="${res[i]['id']}">编辑</button>
+                            <button class="btn btn-danger btn-xs delete_role" idv="${res[i]['id']}">删除</button>
+                         </td>
+                    </tr>
+                    `);
+                }
+
+            }
+        });
+    }
+
+    function select_all_role(){
+        $('#select_all_role').click(function () {
+            select_all();
+        });
+    }
+
+    function select_part_permission(){
+        $('#permission_ul').on('click', '.level_one input[type=checkbox]', function () {
+            var obj = $(this).parent().next();
+            var objs = obj.nextUntil('.level_one');
+            var value = $(this).prop('checked');
+            obj.find('input[type=checkbox]').prop('checked', value);
+            objs.find('input[type=checkbox]').prop('checked', value);
+        });
+        $('#permission_ul').on('click', '.level_two input[type=checkbox]', function () {
+            var obj = $(this).parent().next();
+            var objs = obj.nextUntil('.level_two').not('.level_one');
+            var value = $(this).prop('checked');
+            obj.find('input[type=checkbox]').prop('checked', value);
+            objs.find('input[type=checkbox]').prop('checked', value);
+        })
+    }
+
+    function get_permission_menu(){
+        $.ajax({
+            url: '/rbac/permission_menu/',
+            method: 'get',
+            success: function (res) {
+                for(var i=0;i<res.length;i++){
+                    // 一级菜单渲染
+                    $('#permission_ul').append(`
+                        <li class="level_one"><input type="checkbox" idv="${res[i]["one_menu_id"]}"> ${res[i]['one_menu']}</li>
+                    `);
+
+                    // 二级菜单渲染
+                    var two_menu_data = res[i]["two_menu"];
+                    for(var j=0;j<two_menu_data.length;j++){
+                        $('#permission_ul').append(`
+                            <li class='level_two'><input type="checkbox" value="${two_menu_data[j]["two_menu_id"]}"> ${two_menu_data[j]['two_menu']}</li>
+                        `);
+
+                        // 三级权限路径渲染
+                        var path_data = two_menu_data[j]["path"];
+                        for(var k=0;k<path_data.length;k++) {
+                            $('#permission_ul').append(`
+                                <li class='level_three'><input type="checkbox" value="${path_data[k]["path_id"]}"> ${path_data[k]['path_name']}</li>
+                            `);
+                        }
+                    }
+
+                }
+            }
+        });
+    }
+
+    function user_click(){
+        $('#user_table tbody').on('click', 'tr', function () {
+            // 移除用户所有类值
+            $(this).parent().children().removeClass('tr_visited');
+            // 移除角色所有类值
+            $('#role_table tbody tr').removeClass('tr_visited');
+            // 单独给当前用户添加类值
+            $(this).addClass('tr_visited');
+            // 获取该用户角色及权限信息
+            var id = $(this).attr('idv');
+            get_put_user_data(id);
+        });
+    }
+
+    function role_click(){
+        $('#role_table tbody').on('click', 'tr', function () {
+            // 先移除所有类值
+            $(this).parent().children().removeClass('tr_visited');
+            // 单独给当前用户添加类值
+            $(this).addClass('tr_visited');
+            // 获取该角色得权限信息
+            var id = $(this).attr('idv');
+            get_put_role_data(id);
+        })
+    }
+
+    function click_save_role(){
+        $('#save_role').click(function () {
+            // 获取选中得用户id
+            var user_id = $('#user_table tbody tr[class=tr_visited]').attr('idv');
+            // 获取打勾得角色id
+            var role_ids = [];
+            var objs = $('#role_table tbody input[type=checkbox]:checked');
+            for(var i=0;i<objs.length;i++){
+                role_ids.push(parseInt($(objs[i]).val()));
+            }
+            // 更新角色
+            $.ajax({
+                url: '/rbac/role/?opt=save_role',
+                method: 'put',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    user_id: user_id,
+                    role_ids: role_ids
+                }),
+                success: function (res) {
+                    // 0 成功
+                    if(res === 0){
+                        // 更新角色及权限
+                        get_put_user_data(user_id);
+                    }
+
+                }
+            });
+        });
+    }
+
+    function click_save_permission(){
+        $('#save_permission').click(function () {
+            // 获取选中得角色id
+            var role_id = $('#role_table tbody tr[class=tr_visited]').attr('idv');
+            // 获取选中得权限id
+            var permission_ids = [];
+            var objs = $('#permission_ul .level_three input[type=checkbox]:checked');
+            for(var i=0;i<objs.length;i++){
+                permission_ids.push(parseInt($(objs[i]).val()));
+            }
+            // 更新角色权限
+            $.ajax({
+                url: '/rbac/permission_menu/?opt=save_permission',
+                method: 'put',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    role_id: role_id,
+                    permission_ids: permission_ids
+                }),
+                success: function (res) {
+                    // 0 成功
+                    if(res === 0){
+                        // 更新权限
+                        get_put_role_data(role_id);
+                    }
+
+                }
+            });
+        })
+    }
+
+    start();
+
+</script>
+</body>
+</html>

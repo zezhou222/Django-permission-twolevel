@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+{% load mytag %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+</head>
+<body style="background-color: #fff4f7;">
+
+<div class="container">
+
+    <div class="row" style="padding-top: 20px;padding-bottom: 20px;">
+        {% if request|match_permission:"add_student" %}
+        <button class="btn btn-success add">添加学生</button>
+        {% endif %}
+    </div>
+
+    <div class="row">
+
+        <table class="table table-hover">
+            <tr>
+                <td>id</td>
+                <td>name</td>
+                <td>option</td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
+<script src="/static/js/jquery-3.4.1.js"></script>
+<script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script>
+
+    // 获取数据
+    (function () {
+        $.ajax({
+            url: '/student/',
+            method: 'get',
+            success: function (res) {
+                for(var i=0;i<res.length;i++){
+                    $('table').append(`<tr>
+                <td>${res[i][0]}</td>
+                <td>${res[i][1]}</td>
+                <td>
+                    {% if request|match_permission:"edit_student" %}
+                    <button class="btn btn-primary btn-xs edit" idv='${res[i][0]}'>编辑</button>
+                    {% endif %}
+                    {% if request|match_permission:"delete_student" %}
+                    <button class="btn btn-danger btn-xs delete" idv='${res[i][0]}'>删除</button>
+                    {% endif %}
+                </td>
+            </tr>`);
+                };
+            }
+        });
+    })();
+
+    {% if request|match_permission:"add_student" %}
+    // 添加事件
+    $('.add').click(function () {
+        $.ajax({
+            url: '/student/',
+            method: 'post',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+    {% endif %}
+
+    {% if request|match_permission:"edit_student" %}
+    // 编辑点击事件
+    $('table').on('click', '.edit',function () {
+        $.ajax({
+            url: '/student/',
+            method: 'put',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+    {% endif %}
+
+    {% if request|match_permission:"delete_student" %}
+    // 删除点击事件
+    $('table').on('click', '.delete',function () {
+        $.ajax({
+            url: '/student/',
+            method: 'delete',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+    {% endif %}
+
+</script>
+</body>
+</html>

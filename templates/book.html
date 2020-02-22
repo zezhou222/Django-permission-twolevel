@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+</head>
+<body style="background-color: #fff4f7;">
+
+<div class="container">
+
+    <div class="row" style="padding-top: 20px;padding-bottom: 20px;">
+        <button class="btn btn-success add">添加书籍</button>
+    </div>
+
+    <div class="row">
+
+        <table class="table table-hover">
+            <tr>
+                <td>id</td>
+                <td>book_name</td>
+                <td>option</td>
+            </tr>
+        </table>
+
+    </div>
+
+</div>
+
+<script src="/static/js/jquery-3.4.1.js"></script>
+<script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script>
+
+    // 获取数据
+    (function () {
+        $.ajax({
+            url: '/book/',
+            method: 'get',
+            success: function (res) {
+                for(var i=0;i<res.length;i++){
+                    $('table').append(`<tr>
+                <td>${res[i][0]}</td>
+                <td>${res[i][1]}</td>
+                <td>
+                    <button class="btn btn-primary btn-xs edit" idv='${res[i][0]}'>编辑</button>
+                    <button class="btn btn-danger btn-xs delete" idv='${res[i][0]}'>删除</button>
+                </td>
+            </tr>`);
+                };
+            }
+        });
+    })();
+
+    // 添加事件
+    $('.add').click(function () {
+        $.ajax({
+            url: '/book/',
+            method: 'post',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+
+    // 编辑点击事件
+    $('table').on('click', '.edit',function () {
+        $.ajax({
+            url: '/book/',
+            method: 'put',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+
+    // 删除点击事件
+    $('table').on('click', '.delete',function () {
+        $.ajax({
+            url: '/book/',
+            method: 'delete',
+            success: function (res) {
+                alert(res);
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

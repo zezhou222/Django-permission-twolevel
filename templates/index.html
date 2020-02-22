@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <style>
+
+        .not_display{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="row" style="height: 100px;background-color: #999999;">
+        <a href="/rbac/permission/" target="_blank" class="btn btn-danger">权限页面按钮</a>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-3" style="background-color:beige;padding: 0 0;">
+
+            <div class="list-group" style="margin-bottom: 0;">
+
+                {% for one_menu in menu %}
+                <div class="one_menu">
+                    <button class="list-group-item list-group-item-info">{{ one_menu.one_menu }}</button>
+                </div>
+                {% if forloop.first %}
+                    <div class="two_menu">
+                {% else %}
+                    <div class="two_menu not_display">
+                {% endif %}
+                    {% for two_menu in one_menu.two_menu %}
+                        <button class="list-group-item list-group-item-warning" url="{{ two_menu.request_path }}">{{ two_menu.menu }}</button>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <div class="col-md-9" style="height: 500px;padding: 0 0;">
+
+            <iframe src="{{ menu.0.two_menu.0.request_path }}" frameborder="0" width="100%" height="100%"></iframe>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/jquery-3.4.1.js"></script>
+<script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script>
+
+    $('.two_menu').on('click', 'button', function () {
+        var request_path = $(this).attr('url');
+        $('iframe').attr('src', request_path);
+    });
+
+    $('.one_menu').click(function () {
+        $(this).next().toggleClass('not_display');
+    });
+
+</script>
+</body>
+</html>
